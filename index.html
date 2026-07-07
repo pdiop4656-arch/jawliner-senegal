@@ -924,7 +924,7 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2r
         </a>
       </div>
     </div>
-    <button class="conf-btn" onclick="closeConfirmationPage()">Continuer mes achats →</button>
+    <button class="conf-btn" onclick="window.closeConfirmationPage ? window.closeConfirmationPage() : (window.location.hash='', window.scrollTo(0,0))">Continuer mes achats →</button>
   </div>
 </div>
 
@@ -1503,7 +1503,7 @@ function showOrderNotification(name, phone, addr, items, total, comment) {
 // =========================================================
 // CONFIRMATION PAGE
 // =========================================================
-function showConfirmationPage(refNum) {
+window.showConfirmationPage = function showConfirmationPage(refNum) {
   // Close order modal first
   document.getElementById('order-modal').classList.remove('show');
   document.body.style.overflow = '';
@@ -1528,7 +1528,7 @@ function showConfirmationPage(refNum) {
   } catch(e) {}
 }
 
-function closeConfirmationPage() {
+window.closeConfirmationPage = function closeConfirmationPage() {
   var pg = document.getElementById('confirmation-page');
   pg.classList.remove('show');
   // Fully restore scrolling on body and html
