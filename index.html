@@ -308,6 +308,118 @@ a{color:inherit}
 #wa-btn:hover{transform:scale(1.1);box-shadow:0 6px 26px rgba(37,211,102,.55)}
 #wa-btn svg{width:27px;height:27px;fill:#fff}
 
+/* === CONFIRMATION PAGE === */
+#confirmation-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 800;
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+}
+#confirmation-page.show { display: flex; }
+.conf-inner {
+  max-width: 560px;
+  width: 100%;
+  padding: 3rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--gold);
+  position: relative;
+}
+.conf-check {
+  width: 72px; height: 72px;
+  background: rgba(196,153,58,.12);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.8rem;
+  font-size: 2rem;
+}
+.conf-title {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: .03em;
+  margin-bottom: 1.1rem;
+}
+.conf-rule {
+  width: 44px; height: 1px;
+  background: var(--gold);
+  margin: 0 auto 1.4rem;
+}
+.conf-msg {
+  color: var(--dim);
+  font-size: .92rem;
+  line-height: 1.85;
+  margin-bottom: .8rem;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.conf-ref {
+  font-size: .75rem;
+  color: var(--faint);
+  letter-spacing: .08em;
+  margin-bottom: 2.2rem;
+}
+.conf-ref span {
+  color: var(--gold);
+  font-weight: 700;
+}
+.conf-contact {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1rem 1.4rem;
+  margin: 0 auto 2rem;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+.conf-contact p {
+  font-size: .78rem;
+  color: var(--dim);
+  letter-spacing: .02em;
+}
+.conf-contact p strong { color: var(--text); }
+.conf-btn {
+  background: var(--gold);
+  color: #000;
+  border: none;
+  padding: .9rem 2.4rem;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background .2s, transform .15s;
+  display: inline-block;
+  text-decoration: none;
+}
+.conf-btn:hover { background: var(--gold-h); transform: translateY(-2px); }
+.conf-logo {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.4rem;
+  font-family: var(--serif);
+  font-size: .68rem;
+  letter-spacing: .22em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+@media(max-width:500px) {
+  .conf-inner { padding: 2.2rem 1.2rem; }
+  .conf-title { font-size: 1.4rem; }
+}
 /* === FOOTER === */
 footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2rem 2rem}
 .foot-wrap{max-width:1100px;margin:0 auto}
@@ -743,6 +855,26 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2r
   </div>
 </footer>
 
+<!-- CONFIRMATION PAGE -->
+<div id="confirmation-page" role="main" aria-label="Confirmation de commande">
+  <div class="conf-inner">
+    <span class="conf-logo">Jawliner Sénégal</span>
+    <div class="conf-check">✓</div>
+    <h1 class="conf-title">Merci pour votre commande&nbsp;!</h1>
+    <div class="conf-rule"></div>
+    <p class="conf-msg">
+      Votre commande a bien été reçue.<br>
+      Notre équipe va vous contacter rapidement pour confirmer les détails de votre commande et organiser la livraison.
+    </p>
+    <p class="conf-ref">Référence commande : <span id="conf-ref-num">—</span></p>
+    <div class="conf-contact">
+      <p>📞 <strong>+221 78 588 71 96</strong></p>
+      <p>💬 WhatsApp disponible pour toute question</p>
+    </div>
+    <button class="conf-btn" onclick="closeConfirmationPage()">Continuer mes achats →</button>
+  </div>
+</div>
+
 <script>
 (function() {
 "use strict";
@@ -1167,10 +1299,14 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     document.getElementById('om-sending').classList.remove('show');
     document.getElementById('submit-btn').disabled = false;
     if (r.ok) {
-      document.getElementById('om-form').classList.add('hide');
-      document.getElementById('om-ok').classList.add('show');
-      // Show in-page notification
+      // Generate order reference
+      var refNum = 'JWL-' + Date.now().toString(36).toUpperCase().slice(-6);
+      document.getElementById('conf-ref-num').textContent = refNum;
+      // Show full confirmation page (replaces modal ok state)
+      showConfirmationPage(refNum);
+      // Show popup notification
       showOrderNotification(name, phone, addr, linesText, fmtPrice(total), comment);
+      // Clear cart
       cart = [];
       renderCart();
     } else {
@@ -1312,11 +1448,55 @@ function showOrderNotification(name, phone, addr, items, total, comment) {
 }
 
 // =========================================================
+// CONFIRMATION PAGE
+// =========================================================
+function showConfirmationPage(refNum) {
+  // Close order modal first
+  document.getElementById('order-modal').classList.remove('show');
+  document.body.style.overflow = '';
+  // Set reference number
+  document.getElementById('conf-ref-num').textContent = refNum || '—';
+  // Show page & update URL
+  document.getElementById('confirmation-page').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  if (history.pushState) {
+    history.pushState({ page: 'confirmation' }, 'Merci pour votre commande — JAWLINER SÉNÉGAL', '#merci-pour-votre-commande');
+  }
+  // Scroll confirmation page to top
+  document.getElementById('confirmation-page').scrollTop = 0;
+  // Google Ads / Analytics conversion event (safe if gtag not loaded)
+  try {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'conversion', { 'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL' });
+    }
+    if (typeof fbq !== 'undefined') {
+      fbq('track', 'Purchase');
+    }
+  } catch(e) {}
+}
+
+function closeConfirmationPage() {
+  document.getElementById('confirmation-page').classList.remove('show');
+  document.body.style.overflow = '';
+  if (history.pushState) {
+    history.pushState(null, 'JAWLINER SÉNÉGAL', window.location.pathname);
+  }
+  // Scroll shop back to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =========================================================
 // DEEP LINK — Open product from URL hash
 // =========================================================
 function checkDeepLink() {
   var hash = window.location.hash;
   if (!hash) return;
+  // Don't auto-open confirmation page on direct link (security)
+  if (hash === '#merci-pour-votre-commande') {
+    // Clear the hash silently - confirmation page is only accessible after purchase
+    if (history.replaceState) history.replaceState(null, '', window.location.pathname);
+    return;
+  }
   var m = hash.match(/^#produit\/(.+)$/);
   if (!m) return;
   var slug = m[1];
@@ -1332,6 +1512,17 @@ function checkDeepLink() {
 // Also handle browser back/forward
 window.addEventListener('popstate', function() {
   var hash = window.location.hash;
+  if (hash === '#merci-pour-votre-commande') {
+    // Navigating forward to confirmation (shouldn't normally happen directly)
+    return;
+  }
+  // Close confirmation page if open
+  var confPage = document.getElementById('confirmation-page');
+  if (confPage && confPage.classList.contains('show')) {
+    confPage.classList.remove('show');
+    document.body.style.overflow = '';
+    return;
+  }
   if (!hash || hash === '#') {
     closeProductModal();
   } else {
