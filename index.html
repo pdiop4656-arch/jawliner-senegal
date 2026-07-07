@@ -316,11 +316,13 @@ a{color:inherit}
   background: var(--bg);
   z-index: 800;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 2rem 1rem;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100%;
   text-align: center;
 }
 #confirmation-page.show { display: flex; }
@@ -379,8 +381,8 @@ a{color:inherit}
   background: var(--gold);
   color: #000;
   border: none;
-  padding: .9rem 2.4rem;
-  font-size: .78rem;
+  padding: 1rem 2.6rem;
+  font-size: .8rem;
   font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
@@ -389,8 +391,14 @@ a{color:inherit}
   transition: background .2s, transform .15s;
   display: inline-block;
   text-decoration: none;
+  min-width: 200px;
+  min-height: 48px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: .5rem;
 }
 .conf-btn:hover { background: var(--gold-h); transform: translateY(-2px); }
+.conf-btn:active { transform: scale(.97); }
 .conf-logo {
   position: absolute;
   top: 1.2rem;
@@ -1503,7 +1511,7 @@ function showConfirmationPage(refNum) {
   document.getElementById('conf-ref-num').textContent = refNum || '—';
   // Show page & update URL
   document.getElementById('confirmation-page').classList.add('show');
-  document.body.style.overflow = 'hidden';
+  // Do not lock body scroll — confirmation page handles its own scrolling
   if (history.pushState) {
     history.pushState({ page: 'confirmation' }, 'Merci pour votre commande — JAWLINER SÉNÉGAL', '#merci-pour-votre-commande');
   }
@@ -1521,13 +1529,21 @@ function showConfirmationPage(refNum) {
 }
 
 function closeConfirmationPage() {
-  document.getElementById('confirmation-page').classList.remove('show');
+  var pg = document.getElementById('confirmation-page');
+  pg.classList.remove('show');
+  // Fully restore scrolling on body and html
   document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.documentElement.style.overflow = '';
+  // Clear hash URL
   if (history.pushState) {
     history.pushState(null, 'JAWLINER SÉNÉGAL', window.location.pathname);
   }
-  // Scroll shop back to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Scroll back to top of shop
+  window.scrollTo(0, 0);
+  // Focus on products section for accessibility
+  var shop = document.getElementById('products');
+  if (shop) shop.focus({ preventScroll: true });
 }
 
 // =========================================================
