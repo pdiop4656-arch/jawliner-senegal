@@ -366,6 +366,14 @@ a{color:inherit}
   color: var(--dim);
   letter-spacing: .02em;
 }
+.delivery-card-icon {
+  flex-shrink: 0;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  transition: color .2s;
+}
+.delivery-card.selected .delivery-card-icon { color: var(--gold); }
 .delivery-price {
   font-family: var(--serif);
   font-size: .95rem;
@@ -896,26 +904,29 @@ src="https://www.facebook.com/tr?id=590866706963718&ev=PageView&noscript=1"
       <div class="delivery-section">
         <label class="delivery-label">Mode de livraison <span class="req">*</span></label>
         <div class="delivery-cards" id="delivery-cards">
-          <div class="delivery-card" data-delivery="place" data-fee="0" onclick="selectDelivery(this)">
+          <div class="delivery-card" data-delivery="place" data-fee="0">
             <div class="delivery-radio"></div>
+            <div class="delivery-card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
             <div class="delivery-card-body">
-              <div class="delivery-name">📍 Récupération sur place</div>
+              <div class="delivery-name">Récupération sur place</div>
               <div class="delivery-sub">PA U17</div>
             </div>
             <div class="delivery-price free">Gratuit</div>
           </div>
-          <div class="delivery-card" data-delivery="dakar-ville" data-fee="1500" onclick="selectDelivery(this)">
+          <div class="delivery-card" data-delivery="dakar-ville" data-fee="1500">
             <div class="delivery-radio"></div>
+            <div class="delivery-card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
             <div class="delivery-card-body">
-              <div class="delivery-name">🚚 Livraison à Dakar (Ville)</div>
+              <div class="delivery-name">Livraison à Dakar (Ville)</div>
               <div class="delivery-sub">Livraison dans la ville de Dakar</div>
             </div>
             <div class="delivery-price">1 500 FRS</div>
           </div>
-          <div class="delivery-card" data-delivery="dakar-hors-ville" data-fee="2500" onclick="selectDelivery(this)">
+          <div class="delivery-card" data-delivery="dakar-hors-ville" data-fee="2500">
             <div class="delivery-radio"></div>
+            <div class="delivery-card-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
             <div class="delivery-card-body">
-              <div class="delivery-name">🚚 Livraison à Dakar (Hors ville)</div>
+              <div class="delivery-name">Livraison à Dakar (Hors ville)</div>
               <div class="delivery-sub">Banlieue et communes hors Dakar centre</div>
             </div>
             <div class="delivery-price">2 500 FRS</div>
@@ -1371,6 +1382,15 @@ function updateOrderTotal() {
   var el = document.getElementById('os-total');
   if (el) el.textContent = fmtPrice(total);
 }
+// Expose to global so event delegation + inline handlers can reach them
+window.selectDelivery = selectDelivery;
+window.updateOrderTotal = updateOrderTotal;
+
+// Event delegation for delivery cards — works on all devices, no inline onclick needed
+document.addEventListener('click', function(e) {
+  var card = e.target.closest('.delivery-card');
+  if (card) selectDelivery(card);
+});
 
 function openOrderModal(items) {
   currentOrderItems = items;
