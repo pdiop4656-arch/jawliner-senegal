@@ -308,6 +308,76 @@ a{color:inherit}
 #wa-btn:hover{transform:scale(1.1);box-shadow:0 6px 26px rgba(37,211,102,.55)}
 #wa-btn svg{width:27px;height:27px;fill:#fff}
 
+/* === DELIVERY OPTIONS === */
+.delivery-section { margin-bottom: 1.2rem; }
+.delivery-label {
+  display: block;
+  font-size: .68rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: .7rem;
+}
+.delivery-label .req { color: var(--gold); }
+.delivery-cards { display: flex; flex-direction: column; gap: .5rem; }
+.delivery-card {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .85rem 1rem;
+  border: 1px solid var(--muted);
+  background: var(--card);
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.delivery-card:hover { border-color: var(--gold); }
+.delivery-card.selected {
+  border-color: var(--gold);
+  background: rgba(196,153,58,.08);
+}
+.delivery-radio {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--faint);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color .2s;
+}
+.delivery-card.selected .delivery-radio { border-color: var(--gold); }
+.delivery-card.selected .delivery-radio::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+.delivery-card-body { flex: 1; }
+.delivery-name {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .03em;
+  margin-bottom: .1rem;
+}
+.delivery-sub {
+  font-size: .7rem;
+  color: var(--dim);
+  letter-spacing: .02em;
+}
+.delivery-price {
+  font-family: var(--serif);
+  font-size: .95rem;
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.delivery-price.free { color: #4caf50; }
+@media(max-width:400px) {
+  .delivery-card { padding: .75rem .8rem; gap: .7rem; }
+  .delivery-name { font-size: .78rem; }
+}
 /* === CONFIRMATION PAGE === */
 #confirmation-page {
   display: none;
@@ -561,6 +631,23 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2r
   "priceRange": "5000-8500 FCFA"
 }
 </script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '590866706963718');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=590866706963718&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 </head>
 <body>
 
@@ -806,6 +893,35 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2r
         <label>Adresse de livraison <span class="req">*</span></label>
         <textarea id="f-addr" placeholder="Quartier, rue, point de repère, ville..."></textarea>
       </div>
+      <div class="delivery-section">
+        <label class="delivery-label">Mode de livraison <span class="req">*</span></label>
+        <div class="delivery-cards" id="delivery-cards">
+          <div class="delivery-card" data-delivery="place" data-fee="0" onclick="selectDelivery(this)">
+            <div class="delivery-radio"></div>
+            <div class="delivery-card-body">
+              <div class="delivery-name">📍 Récupération sur place</div>
+              <div class="delivery-sub">PA U17</div>
+            </div>
+            <div class="delivery-price free">Gratuit</div>
+          </div>
+          <div class="delivery-card" data-delivery="dakar-ville" data-fee="1500" onclick="selectDelivery(this)">
+            <div class="delivery-radio"></div>
+            <div class="delivery-card-body">
+              <div class="delivery-name">🚚 Livraison à Dakar (Ville)</div>
+              <div class="delivery-sub">Livraison dans la ville de Dakar</div>
+            </div>
+            <div class="delivery-price">1 500 FRS</div>
+          </div>
+          <div class="delivery-card" data-delivery="dakar-hors-ville" data-fee="2500" onclick="selectDelivery(this)">
+            <div class="delivery-radio"></div>
+            <div class="delivery-card-body">
+              <div class="delivery-name">🚚 Livraison à Dakar (Hors ville)</div>
+              <div class="delivery-sub">Banlieue et communes hors Dakar centre</div>
+            </div>
+            <div class="delivery-price">2 500 FRS</div>
+          </div>
+        </div>
+      </div>
       <div class="fg">
         <label>Commentaire <span style="color:var(--dim);font-size:.6rem;font-weight:400;letter-spacing:.06em">(facultatif — heure de livraison, instructions…)</span></label>
         <textarea id="f-comment" placeholder="ex : Livrer après 18h, appeler avant d'arriver, code portail 1234…" style="min-height:56px"></textarea>
@@ -924,7 +1040,7 @@ footer{background:var(--bg);border-top:1px solid var(--border);padding:3.5rem 2r
         </a>
       </div>
     </div>
-    <button class="conf-btn" onclick="window.closeConfirmationPage ? window.closeConfirmationPage() : (window.location.hash='', window.scrollTo(0,0))">Continuer mes achats →</button>
+    <button class="conf-btn" onclick="window.closeConfirmationPage()">Continuer mes achats →</button>
   </div>
 </div>
 
@@ -1224,6 +1340,37 @@ document.getElementById('checkout-btn').addEventListener('click', function() {
 // ORDER MODAL
 // =========================================================
 var currentOrderItems = [];
+var selectedDeliveryFee = -1;   // -1 = nothing selected yet
+var selectedDeliveryName = '';
+
+function selectDelivery(card) {
+  // Deselect all cards
+  document.querySelectorAll('.delivery-card').forEach(function(c) {
+    c.classList.remove('selected');
+  });
+  // Select clicked card
+  card.classList.add('selected');
+  selectedDeliveryFee = parseInt(card.getAttribute('data-fee'), 10);
+  selectedDeliveryName = card.querySelector('.delivery-name').textContent.trim();
+  // Recalculate total
+  updateOrderTotal();
+  // Clear delivery error if any
+  var errEl = document.getElementById('om-err');
+  if (errEl && errEl.textContent.indexOf('livraison') >= 0) {
+    errEl.classList.remove('show');
+    errEl.textContent = '';
+  }
+}
+
+function updateOrderTotal() {
+  var subtotal = currentOrderItems.reduce(function(s, i) {
+    return s + PRODUCTS[i.id].price * i.qty;
+  }, 0);
+  var fee = selectedDeliveryFee >= 0 ? selectedDeliveryFee : 0;
+  var total = subtotal + fee;
+  var el = document.getElementById('os-total');
+  if (el) el.textContent = fmtPrice(total);
+}
 
 function openOrderModal(items) {
   currentOrderItems = items;
@@ -1245,6 +1392,12 @@ function openOrderModal(items) {
   document.getElementById('f-phone').value = '';
   document.getElementById('f-addr').value = '';
   var fc = document.getElementById('f-comment'); if (fc) fc.value = '';
+  // Reset delivery selection
+  selectedDeliveryFee = -1;
+  selectedDeliveryName = '';
+  document.querySelectorAll('.delivery-card').forEach(function(c) {
+    c.classList.remove('selected');
+  });
   document.getElementById('om-err').classList.remove('show');
   document.getElementById('om-err').textContent = '';
   document.getElementById('om-sending').classList.remove('show');
@@ -1277,16 +1430,26 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     errEl.classList.add('show');
     return;
   }
+  if (selectedDeliveryFee < 0) {
+    errEl.textContent = 'Veuillez sélectionner une option de livraison avant de continuer.';
+    errEl.classList.add('show');
+    // Scroll to delivery section
+    var dc = document.getElementById('delivery-cards');
+    if (dc) dc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   errEl.classList.remove('show');
   document.getElementById('om-sending').classList.add('show');
   document.getElementById('submit-btn').disabled = true;
 
-  var total = 0;
-  currentOrderItems.forEach(function(i) { total += PRODUCTS[i.id].price * i.qty; });
+  var subtotal = 0;
+  currentOrderItems.forEach(function(i) { subtotal += PRODUCTS[i.id].price * i.qty; });
+  var total = subtotal + (selectedDeliveryFee > 0 ? selectedDeliveryFee : 0);
   var linesText = currentOrderItems.map(function(i) {
     var p = PRODUCTS[i.id];
     return '- ' + p.name + ' x' + i.qty + ' = ' + fmtPrice(p.price * i.qty);
   }).join('\n');
+  var deliveryLine = selectedDeliveryName + ' : ' + (selectedDeliveryFee > 0 ? fmtPrice(selectedDeliveryFee) : 'Gratuit');
 
   // Build rich HTML email
   var itemsHtml = currentOrderItems.map(function(i) {
@@ -1322,7 +1485,10 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     + '<table style="width:100%;border-collapse:collapse;border:1px solid #e5e5e5;border-radius:4px;overflow:hidden">'
     + '<thead><tr style="background:#0a0a0a"><th style="padding:10px 14px;text-align:left;font-size:11px;letter-spacing:1px;color:#c4993a;font-weight:700">PRODUIT</th><th style="padding:10px 14px;text-align:center;font-size:11px;letter-spacing:1px;color:#c4993a;font-weight:700">QTÉ</th><th style="padding:10px 14px;text-align:right;font-size:11px;letter-spacing:1px;color:#c4993a;font-weight:700">PRIX</th></tr></thead>'
     + '<tbody>' + itemsHtml + '</tbody>'
-    + '<tfoot><tr style="background:#0a0a0a"><td colspan="2" style="padding:12px 14px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#888;font-weight:700">💰 TOTAL</td><td style="padding:12px 14px;text-align:right;font-size:16px;font-weight:700;color:#c4993a">' + fmtPrice(total) + '</td></tr></tfoot>'
+    + '<tfoot>'
+    + (selectedDeliveryFee > 0 ? '<tr style="background:#1a1a1a"><td colspan="2" style="padding:10px 14px;font-size:12px;color:#888">🚚 ' + selectedDeliveryName + '</td><td style="padding:10px 14px;text-align:right;font-size:12px;color:#c4993a">+' + fmtPrice(selectedDeliveryFee) + '</td></tr>' : '<tr style="background:#1a1a1a"><td colspan="2" style="padding:10px 14px;font-size:12px;color:#888">📍 ' + selectedDeliveryName + '</td><td style="padding:10px 14px;text-align:right;font-size:12px;color:#4caf50">Gratuit</td></tr>')
+    + '<tr style="background:#0a0a0a"><td colspan="2" style="padding:12px 14px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#888;font-weight:700">💰 TOTAL</td><td style="padding:12px 14px;text-align:right;font-size:16px;font-weight:700;color:#c4993a">' + fmtPrice(total) + '</td></tr>'
+    + '</tfoot>'
     + '</table>'
     + '</div>'
     + '<div style="background:#f9f9f9;padding:14px 28px;border-top:1px solid #e5e5e5;text-align:center">'
@@ -1340,6 +1506,7 @@ document.getElementById('submit-btn').addEventListener('click', function() {
   fd.append('Adresse_de_livraison', addr);
   fd.append('Produits_commandes', linesText);
   fd.append('Total', fmtPrice(total));
+  fd.append('Mode_de_livraison', deliveryLine);
   if (comment) fd.append('Commentaire_client', comment);
   fd.append('_html', htmlEmail);
 
@@ -1518,33 +1685,33 @@ window.showConfirmationPage = function showConfirmationPage(refNum) {
   // Scroll confirmation page to top
   document.getElementById('confirmation-page').scrollTop = 0;
   // Google Ads / Analytics conversion event (safe if gtag not loaded)
+  // Meta Pixel — Purchase event (fires on every successful order)
   try {
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'conversion', { 'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL' });
-    }
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'Purchase');
+      var purchaseTotal = currentOrderItems.reduce(function(s,i){return s+PRODUCTS[i.id].price*i.qty;},0);
+      fbq('track', 'Purchase', {
+        value: purchaseTotal,
+        currency: 'XOF',
+        content_ids: currentOrderItems.map(function(i){return PRODUCTS[i.id].slug||String(i.id);}),
+        content_type: 'product'
+      });
     }
   } catch(e) {}
 }
 
 window.closeConfirmationPage = function closeConfirmationPage() {
   var pg = document.getElementById('confirmation-page');
-  pg.classList.remove('show');
-  // Fully restore scrolling on body and html
+  if (pg) pg.classList.remove('show');
   document.body.style.overflow = '';
   document.body.style.position = '';
   document.documentElement.style.overflow = '';
-  // Clear hash URL
   if (history.pushState) {
     history.pushState(null, 'JAWLINER SÉNÉGAL', window.location.pathname);
   }
-  // Scroll back to top of shop
   window.scrollTo(0, 0);
-  // Focus on products section for accessibility
-  var shop = document.getElementById('products');
-  if (shop) shop.focus({ preventScroll: true });
 }
+// Expose to global scope so onclick="" can reach it
+window.closeConfirmationPage = closeConfirmationPage;
 
 // =========================================================
 // DEEP LINK — Open product from URL hash
