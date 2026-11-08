@@ -1138,9 +1138,9 @@ src="https://www.facebook.com/tr?id=590866706963718&ev=PageView&noscript=1"
 // =========================================================
 // EMAILJS CONFIGURATION
 // =========================================================
-var EMAILJS_PUBLIC_KEY  = 'euwYrWc_LbhMPVDPG';
-var EMAILJS_SERVICE_ID  = 'service_z7f5cpm';
-var EMAILJS_TEMPLATE_ID = 'template_2nmozjt';
+var EMAILJS_PUBLIC_KEY  = 'E5M3KCwdjD887-7GP';
+var EMAILJS_SERVICE_ID  = 'service_wsgv1ij';
+var EMAILJS_TEMPLATE_ID = 'template_5q6ittg';
 var emailJsPromise = null;
 function loadEmailJS() {
   if (window.emailjs) {
@@ -1159,6 +1159,9 @@ function loadEmailJS() {
     };
     script.onerror = function() { reject(new Error('Impossible de charger EmailJS')); };
     document.head.appendChild(script);
+  }).catch(function(err) {
+    emailJsPromise = null;
+    throw err;
   });
   return emailJsPromise;
 }
@@ -1753,11 +1756,25 @@ document.getElementById('submit-btn').addEventListener('click', function() {
   document.getElementById('om-sending').classList.add('show');
   document.getElementById('submit-btn').disabled = true;
 
+  var orderEmailSubject = 'Nouvelle commande JAWLINER — ' + name + ' (' + orderRef + ')';
   var templateParams = {
     to_email: 'jawlinersenegal@gmail.com',
-    email_subject: 'Nouvelle commande JAWLINER — ' + name + ' (' + orderRef + ')',
+    subject: orderEmailSubject,
+    email_subject: orderEmailSubject,
     email_body: emailBody
   };
+
+  // EmailJS refuses requests whose dynamic variables exceed its size limit.
+  // Keep a safety margin below the documented 50 KB limit.
+  var emailPayloadSize = new Blob([JSON.stringify(templateParams)]).size;
+  if (emailPayloadSize > 45000) {
+    document.getElementById('om-sending').classList.remove('show');
+    document.getElementById('submit-btn').disabled = false;
+    errEl.textContent = 'Les informations de la commande sont trop volumineuses. Raccourcissez le commentaire puis réessayez.';
+    errEl.classList.add('show');
+    console.error('EmailJS payload too large:', emailPayloadSize, 'bytes');
+    return;
+  }
 
   loadEmailJS()
     .then(function() {
